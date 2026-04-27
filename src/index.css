@@ -1,0 +1,678 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   DESIGN TOKENS — Green + Black Terminal
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+:root {
+  --bg-void: #080a08;
+  --bg-surface: #0d110d;
+  --bg-raised: #111a11;
+  --bg-border: #114925;
+  /* Green borders in black sections */
+  --accent: #22c55e;
+  --accent-dim: #4ade80;
+  --accent-glow: rgba(34, 197, 94, 0.07);
+  --text-primary: #ffffff;
+  --text-secondary: #f3f4f6;
+  --text-muted: #9ca3af;
+  --radius: 0.5rem;
+
+  /* Tailwind HSL mappings */
+  --background: 120 11% 3.5%;
+  --foreground: 120 30% 93%;
+  --card: 120 14% 5.5%;
+  --card-foreground: 120 30% 93%;
+  --popover: 120 14% 5.5%;
+  --popover-foreground: 120 30% 93%;
+  --primary: 142 71% 45%;
+  --primary-foreground: 120 11% 3.5%;
+  --secondary: 120 20% 9%;
+  --secondary-foreground: 120 30% 93%;
+  --muted: 120 20% 9%;
+  --muted-foreground: 120 14% 49%;
+  --accent-tw: 120 20% 9%;
+  --accent-foreground: 120 30% 93%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 120 30% 93%;
+  --border: 120 22% 13%;
+  --input: 120 22% 13%;
+  --ring: 142 71% 45%;
+}
+
+/* Alternating Green Theme */
+.theme-green {
+  --bg-void: #22c55e;
+  --bg-surface: #1ea34f;
+  --bg-raised: #1b8f46;
+  --bg-border: #080a08;
+  /* Black borders in green sections */
+  --accent: #080a08;
+  --accent-dim: #1a2a1a;
+  --accent-glow: rgba(8, 10, 8, 0.08);
+  --text-primary: #080a08;
+  --text-secondary: #111827;
+  --text-muted: #1f2937;
+}
+
+/* Force dark only — no light surfaces anywhere */
+.dark,
+:root {
+  color-scheme: dark;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   BASE STYLES
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+@layer base {
+  * {
+    border-color: var(--bg-border);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+    scrollbar-color: var(--bg-border) var(--bg-void);
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, system-ui, sans-serif;
+    font-weight: 400;
+    background-color: var(--bg-void);
+    color: var(--text-secondary);
+    font-size: 15px;
+    line-height: 1.7;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    color: var(--text-primary);
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  ::selection {
+    background-color: rgba(34, 197, 94, 0.2);
+    color: var(--text-primary);
+  }
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   COMPONENT CLASSES
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+@layer components {
+
+  /* Eyebrow labels */
+  .eyebrow {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+    margin-bottom: 12px;
+    display: inline-block;
+  }
+
+  /* Section headings */
+  .section-title {
+    font-size: 28px;
+    font-weight: 500;
+    color: var(--text-primary);
+    line-height: 1.3;
+    margin-bottom: 16px;
+  }
+
+  .section-title em {
+    font-style: italic;
+    color: var(--accent-dim);
+  }
+
+  /* Display heading (Hero) */
+  .display-title {
+    font-size: 40px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    color: var(--text-primary);
+    line-height: 1.15;
+  }
+
+  @media (min-width: 768px) {
+    .display-title {
+      font-size: 64px;
+    }
+  }
+
+  .display-title em {
+    font-style: italic;
+    color: var(--accent-dim);
+  }
+
+  /* Cards */
+  .g-card {
+    /* Force cards to be solid pitch black and reset children to light text */
+    --bg-void: #080a08;
+    --bg-surface: #050505;
+    --text-primary: #ffffff;
+    --text-secondary: #f3f4f6;
+    --text-muted: #9ca3af;
+    --accent: #22c55e;
+    --accent-dim: #4ade80;
+    --accent-glow: rgba(34, 197, 94, 0.07);
+
+    background: var(--bg-surface);
+    border: 0.5px solid var(--bg-border);
+    border-radius: 8px;
+    transition: border-color 200ms ease, transform 200ms ease, box-shadow 200ms ease;
+    will-change: transform;
+    color: var(--text-secondary);
+    /* Ensure text stays light */
+  }
+
+  .g-card:hover {
+    box-shadow: 0 0 16px var(--accent-glow);
+    transform: translateY(-4px);
+  }
+
+  /* Panels */
+  .g-panel {
+    /* Force panels to be solid pitch black and reset children to light text */
+    --bg-void: #080a08;
+    --bg-surface: #050505;
+    --text-primary: #ffffff;
+    --text-secondary: #f3f4f6;
+    --text-muted: #9ca3af;
+    --accent: #22c55e;
+    --accent-dim: #4ade80;
+    --accent-glow: rgba(34, 197, 94, 0.07);
+
+    background: var(--bg-surface);
+    border: 0.5px solid var(--bg-border);
+    border-radius: 12px;
+    color: var(--text-secondary);
+  }
+
+  /* Ghost button */
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    border: 0.5px solid var(--accent);
+    border-radius: 3px;
+    color: var(--accent-dim);
+    font-size: 14px;
+    font-weight: 500;
+    background: transparent;
+    cursor: pointer;
+    transition: background 200ms ease, border-color 200ms ease;
+  }
+
+  .btn-ghost:hover {
+    background: var(--accent-glow);
+  }
+
+  /* Solid button */
+  .btn-solid {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    border: 0.5px solid var(--accent);
+    border-radius: 3px;
+    color: var(--bg-void);
+    font-size: 14px;
+    font-weight: 500;
+    background: var(--accent);
+    cursor: pointer;
+    transition: background 150ms ease;
+  }
+
+  .btn-solid:hover {
+    background: #16a34a;
+  }
+
+  /* Tags */
+  .g-tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 3px 8px;
+    border: 0.5px solid var(--bg-border);
+    border-radius: 3px;
+    color: var(--text-muted);
+    background: transparent;
+  }
+
+  .g-tag--accent {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* Platform pills */
+  .platform-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border: 0.5px solid var(--bg-border);
+    border-radius: 3px;
+    font-size: 12px;
+    color: var(--text-muted);
+    transition: border-color 200ms ease, color 200ms ease;
+  }
+
+  .platform-pill:hover {
+    border-color: var(--accent);
+    color: var(--accent-dim);
+  }
+
+  /* Caption */
+  .caption {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  /* Section divider (animated) */
+  .section-divider {
+    width: 100%;
+    height: 0.5px;
+    background: var(--bg-border);
+    transform-origin: left;
+    transform: scaleX(0);
+    transition: transform 600ms ease;
+  }
+
+  .section-divider.visible {
+    transform: scaleX(1);
+  }
+
+  /* Horizontal scroll row */
+  .scroll-row {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding-bottom: 8px;
+    cursor: grab;
+  }
+
+  .scroll-row::-webkit-scrollbar {
+    display: none;
+  }
+
+  .scroll-row:active {
+    cursor: grabbing;
+  }
+
+  /* Scroll progress bar */
+  .scroll-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 2px;
+    background: var(--accent);
+    z-index: 9999;
+    transform-origin: left;
+    will-change: transform;
+  }
+
+  /* Product card accent border */
+  .product-accent-border {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 2px;
+    background: var(--accent);
+    width: 0;
+    transition: width 300ms ease;
+  }
+
+  .g-card:hover .product-accent-border {
+    width: 100%;
+  }
+
+  .product-accent-border.drawn {
+    width: 100%;
+  }
+
+  /* Star rating */
+  .star-rating {
+    display: flex;
+    gap: 4px;
+  }
+
+  .star-rating .star {
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    color: var(--bg-border);
+    transition: color 40ms ease, transform 200ms ease;
+  }
+
+  .star-rating .star.filled {
+    color: var(--accent);
+  }
+
+  .star-rating .star.pulse {
+    animation: star-pulse 200ms ease;
+  }
+
+  /* Floating label for forms */
+  .form-group {
+    position: relative;
+    margin-bottom: 20px;
+  }
+
+  .form-group input,
+  .form-group textarea,
+  .form-group select {
+    width: 100%;
+    padding: 14px 16px;
+    background: var(--bg-raised);
+    border: 0.5px solid var(--bg-border);
+    border-radius: 3px;
+    color: var(--text-primary);
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 150ms ease;
+  }
+
+  .form-group input:focus,
+  .form-group textarea:focus,
+  .form-group select:focus {
+    border-color: var(--accent);
+  }
+
+  .form-group label {
+    position: absolute;
+    top: 14px;
+    left: 16px;
+    font-size: 14px;
+    color: #ffffff; /* White text */
+    pointer-events: none;
+    transition: opacity 200ms ease;
+  }
+
+  .form-group input:focus~label,
+  .form-group input:not(:placeholder-shown)~label,
+  .form-group textarea:focus~label,
+  .form-group textarea:not(:placeholder-shown)~label,
+  .form-group select:focus~label,
+  .form-group select:valid~label {
+    opacity: 0; /* Hide completely */
+  }
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   ANIMATIONS (respects reduced motion)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+@media (prefers-reduced-motion: no-preference) {
+
+  /* Entrance animations */
+  .anim-fade-in {
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 400ms ease, transform 400ms ease;
+    will-change: opacity, transform;
+  }
+
+  .anim-fade-in.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .anim-slide-left {
+    opacity: 0;
+    transform: translateX(-12px);
+    transition: opacity 300ms ease, transform 300ms ease;
+    will-change: opacity, transform;
+  }
+
+  .anim-slide-left.visible {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .anim-slide-right {
+    opacity: 0;
+    transform: translateX(60px);
+    transition: opacity 400ms ease, transform 400ms ease;
+    will-change: opacity, transform;
+  }
+
+  .anim-slide-right.visible {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .anim-scale-in {
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 600ms ease;
+  }
+
+  .anim-scale-in.visible {
+    transform: scaleX(1);
+  }
+
+  /* Typewriter cursor blink */
+  @keyframes blink {
+
+    0%,
+    100% {
+      opacity: 1;
+    }
+
+    50% {
+      opacity: 0;
+    }
+  }
+
+  .typewriter-cursor {
+    color: var(--accent);
+    animation: blink 1s step-end infinite;
+  }
+
+  .typewriter-cursor.fade-out {
+    animation: none;
+    opacity: 0;
+    transition: opacity 300ms ease;
+  }
+
+  /* Hero background grid drift */
+  @keyframes grid-drift {
+    from {
+      transform: translateY(0);
+    }
+
+    to {
+      transform: translateY(-40px);
+    }
+  }
+
+  .hero-grid::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle, rgba(34, 197, 94, 0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    animation: grid-drift 20s linear infinite;
+    pointer-events: none;
+  }
+
+  /* Star pulse */
+  @keyframes star-pulse {
+    0% {
+      transform: scale(1);
+    }
+
+    50% {
+      transform: scale(1.3);
+    }
+
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  /* Nav slide down */
+  @keyframes nav-slide-down {
+    from {
+      transform: translateY(-100%);
+    }
+
+    to {
+      transform: translateY(0);
+    }
+  }
+
+  .nav-entrance {
+    animation: nav-slide-down 400ms ease forwards;
+  }
+
+  /* Button entrance */
+  .btn-entrance {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 400ms ease, transform 400ms ease;
+    will-change: opacity, transform;
+  }
+
+  .btn-entrance.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Eyebrow clip reveal */
+  @keyframes clip-reveal {
+    from {
+      clip-path: inset(0 100% 0 0);
+    }
+
+    to {
+      clip-path: inset(0 0% 0 0);
+    }
+  }
+
+  .eyebrow-reveal {
+    clip-path: inset(0 100% 0 0);
+    animation: clip-reveal 600ms ease forwards;
+    animation-delay: 200ms;
+  }
+}
+
+/* Reduced motion: no animations at all */
+@media (prefers-reduced-motion: reduce) {
+
+  .anim-fade-in,
+  .anim-slide-left,
+  .anim-slide-right,
+  .anim-scale-in,
+  .btn-entrance {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .eyebrow-reveal {
+    clip-path: none !important;
+    animation: none !important;
+  }
+
+  .typewriter-cursor {
+    animation: none !important;
+  }
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   CUSTOM CURSOR (desktop pointer: fine only)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+@media (pointer: fine) {
+  .custom-cursor-active body {
+    cursor: none !important;
+  }
+
+  .custom-cursor-active a,
+  .custom-cursor-active button,
+  .custom-cursor-active [role="button"],
+  .custom-cursor-active input,
+  .custom-cursor-active textarea,
+  .custom-cursor-active select {
+    cursor: none !important;
+  }
+
+  .cursor-dot {
+    position: fixed;
+    width: 8px;
+    height: 8px;
+    background: #ffffff;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 99999;
+    transition: width 150ms ease, height 150ms ease, background 150ms ease, border 150ms ease;
+    transform: translate(-50%, -50%);
+    will-change: transform;
+  }
+
+  .cursor-dot.hovering {
+    width: 24px;
+    height: 24px;
+    background: transparent;
+    border: 1px solid #ffffff;
+  }
+}
+
+/* Hide cursor elements on touch */
+@media (pointer: coarse) {
+  .cursor-dot {
+    display: none !important;
+  }
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   MOBILE ADJUSTMENTS
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+@media (max-width: 768px) {
+  .display-title {
+    font-size: 32px;
+  }
+
+  .section-title {
+    font-size: 24px;
+  }
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   CONTINUOUS MARQUEE ANIMATION
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-100%); }
+}
+
+.animate-marquee {
+  animation: marquee 30s linear infinite;
+  will-change: transform;
+}
+
+.group:hover .animate-marquee {
+  animation-play-state: paused;
+}

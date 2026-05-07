@@ -4,10 +4,16 @@ const navLinks = [
   { href: '#home', label: 'Home' },
   { href: '#about', label: 'Community' },
   { href: '#services', label: 'Services' },
+  { href: '#products', label: 'Products' },
   { href: '#workshops', label: 'Workshop' },
 ];
 
-export default function Navbar() {
+interface NavbarProps {
+  onLogoClick?: () => void;
+  onNavClick?: (href: string) => void;
+}
+
+export default function Navbar({ onLogoClick, onNavClick }: NavbarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState('home');
@@ -49,7 +55,16 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <a href="#home" className="flex items-center gap-2">
+          <a
+            href="#home"
+            className="flex items-center gap-2"
+            onClick={(e) => {
+              if (onLogoClick) {
+                e.preventDefault();
+                onLogoClick();
+              }
+            }}
+          >
             <img src="/logo.png" alt="Gamkers" className="h-8 w-8" />
             <span
               style={{
@@ -71,6 +86,12 @@ export default function Navbar() {
                 key={link.href}
                 href={link.href}
                 className="relative"
+                onClick={(e) => {
+                  if (onNavClick) {
+                    e.preventDefault();
+                    onNavClick(link.href);
+                  }
+                }}
                 style={{
                   fontSize: '13px',
                   fontWeight: 500,
@@ -153,7 +174,13 @@ export default function Navbar() {
             <a
               key={link.href}
               href={link.href}
-              onClick={() => setIsOpen(false)}
+              onClick={(e) => {
+                setIsOpen(false);
+                if (onNavClick) {
+                  e.preventDefault();
+                  onNavClick(link.href);
+                }
+              }}
               style={{
                 fontSize: '14px',
                 color: activeSection === link.href.substring(1) ? 'var(--accent)' : 'var(--text-muted)',

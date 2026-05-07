@@ -280,7 +280,7 @@ export default function Workshops() {
   }
 
   return (
-    <section id="workshops" className="py-24 md:py-32 theme-green" style={{ background: 'var(--bg-void)' }}>
+    <section id="workshops" className="py-24 md:py-32" style={{ background: 'var(--bg-void)' }}>
       <div ref={sectionRef} className="max-w-6xl mx-auto px-6">
         {/* Eyebrow */}
         <p className="eyebrow anim-slide-left">WORKSHOPS</p>

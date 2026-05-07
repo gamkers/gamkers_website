@@ -1,16 +1,11 @@
 import { useInView, useCountUp } from '@/hooks/use-animations';
+import communityImg from './community.jpg';
 
 const stats = [
   { value: 240, suffix: 'K+', label: 'Instagram followers', duration: 1200 },
   { value: 3, suffix: 'K+', label: 'Discord members', duration: 800 },
   { value: 10, suffix: '+', label: 'YouTube videos', duration: 600 },
   { value: 500, suffix: '+', label: 'Students trained', duration: 1200 },
-];
-
-const platforms = [
-  { name: 'Instagram', count: '240K+', href: 'https://www.instagram.com/gamkers/' },
-  { name: 'Discord', count: '3K+', href: 'https://discord.gg/9MWjDM3cTy' },
-  { name: 'YouTube', count: '10+', href: 'https://www.youtube.com/@gamkeryt/featured' },
 ];
 
 function StatNumber({ value, suffix, duration }: { value: number; suffix: string; duration: number }) {
@@ -22,8 +17,40 @@ export default function About() {
   const sectionRef = useInView();
 
   return (
-    <section id="about" className="py-24 md:py-32 theme-green" style={{ background: 'var(--bg-void)' }}>
-      <div ref={sectionRef} className="max-w-6xl mx-auto px-6">
+    <section id="about" className="py-24 md:py-32 relative overflow-hidden" style={{ 
+      background: '#0a2a0a', // Deep dark green base
+      color: '#ffffff',
+      '--text-primary': '#ffffff',
+      '--text-secondary': '#e5e7eb',
+      '--text-muted': '#9ca3af',
+      '--accent': '#22c55e',
+      '--accent-dim': '#4ade80',
+    } as any}>
+      {/* Background Image with dark overlay ("add some black") */}
+      <div 
+        style={{ 
+          position: 'absolute', 
+          inset: 0, 
+          backgroundImage: `url(${communityImg})`, 
+          backgroundSize: 'cover', 
+          backgroundPosition: 'center', 
+          opacity: 0.3,
+          filter: 'brightness(0.5)',
+          pointerEvents: 'none',
+          zIndex: 0
+        }} 
+      />
+      {/* Additional green tint overlay to maintain "that green" feel */}
+      <div 
+        style={{ 
+          position: 'absolute', 
+          inset: 0, 
+          background: 'linear-gradient(to bottom, rgba(34, 197, 94, 0.15), rgba(0, 0, 0, 0.4))',
+          pointerEvents: 'none',
+          zIndex: 1
+        }} 
+      />
+      <div ref={sectionRef} className="max-w-6xl mx-auto px-6 relative z-10">
         {/* Eyebrow */}
         <p className="eyebrow anim-slide-left">ABOUT GAMKERS</p>
 

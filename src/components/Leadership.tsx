@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import { useInView } from '@/hooks/use-animations';
 
 const team = [
@@ -65,9 +66,38 @@ const team = [
 
 export default function Leadership() {
   const sectionRef = useInView();
+  const vantaRef = useRef<HTMLDivElement>(null);
+  const [vantaEffect, setVantaEffect] = useState<any>(null);
+
+  useEffect(() => {
+    if (!vantaEffect && vantaRef.current && (window as any).VANTA) {
+      setVantaEffect((window as any).VANTA.NET({
+        el: vantaRef.current,
+        mouseControls: true,
+        touchControls: true,
+        gyroControls: false,
+        minHeight: 200.00,
+        minWidth: 200.00,
+        scale: 1.00,
+        scaleMobile: 1.00,
+        color: 0x00ff1a,
+        backgroundColor: 0x0d2519,
+        points: 11.00,
+        maxDistance: 26.00
+      }));
+    }
+    return () => {
+      if (vantaEffect) vantaEffect.destroy();
+    };
+  }, [vantaEffect]);
 
   return (
-    <section id="team" className="py-24 md:py-32" style={{ background: 'var(--bg-void)' }}>
+    <section 
+      id="team" 
+      ref={vantaRef}
+      className="py-24 md:py-32 relative overflow-hidden" 
+      style={{ background: '#0d2519' }}
+    >
       <div ref={sectionRef} className="max-w-6xl mx-auto px-6">
         {/* Eyebrow */}
         <p className="eyebrow anim-slide-left">THE TEAM</p>

@@ -139,7 +139,7 @@ export default function Courses() {
         </div>
 
         {/* Tools Grid */}
-        <div id="products">
+        <div id="tools">
           <h3 className="anim-fade-in section-title" style={{ fontSize: '24px', marginBottom: '32px' }}>
             Built by hackers, <em>for</em> hackers.
           </h3>

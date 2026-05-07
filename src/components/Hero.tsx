@@ -1,83 +1,85 @@
 import { useEffect, useRef, useState } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { Flip } from 'gsap/Flip';
+
+gsap.registerPlugin(ScrollTrigger, Flip);
 
 const HEADLINE = 'Learn. Hunt. Dominate.';
-const CHAR_DELAY = 45;
 
 export default function Hero() {
-  const [displayText, setDisplayText] = useState('');
-  const [showCursor, setShowCursor] = useState(true);
-  const [cursorFading, setCursorFading] = useState(false);
   const [buttonsVisible, setButtonsVisible] = useState(false);
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const logoPlaceholderRef = useRef<HTMLDivElement>(null);
+  const bigLogoRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
-    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReduced) {
-      setDisplayText(HEADLINE);
-      setButtonsVisible(true);
-      setShowCursor(false);
-      return;
-    }
+    // Initial state setup
+    setButtonsVisible(true);
 
-    let i = 0;
-    let cursorTimer1: ReturnType<typeof setTimeout>;
-    let cursorTimer2: ReturnType<typeof setTimeout>;
+    const ctx = gsap.context(() => {
+      // 1. Initial State: Force the Big Logo to "fit" the placeholder position
+      // We want it to START large and center, so we capture that first.
+      const state = Flip.getState(bigLogoRef.current);
+      
+      // 2. Remove the manual centering styles to let it sit in the natural layout placeholder
+      gsap.set(bigLogoRef.current, { 
+        position: 'relative', 
+        top: 'auto', 
+        left: 'auto', 
+        transform: 'none',
+        zIndex: 'auto'
+      });
 
-    const timer = setInterval(() => {
-      i++;
-      setDisplayText(HEADLINE.slice(0, i));
-      if (i >= HEADLINE.length) {
-        clearInterval(timer);
-        // Blink cursor for 3s then fade
-        cursorTimer1 = setTimeout(() => {
-          setCursorFading(true);
-          cursorTimer2 = setTimeout(() => setShowCursor(false), 300);
-        }, 3000);
-      }
-    }, CHAR_DELAY);
+      // 3. The scroll timeline
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: 'top top',
+          end: '+=100%',
+          pin: true,
+          scrub: 1.5,
+          anticipatePin: 1,
+        }
+      });
 
-    // Show buttons after typing finishes
-    const btnTimer = setTimeout(() => setButtonsVisible(true), HEADLINE.length * CHAR_DELAY + 200);
+      // 4. The Flip Animation: Big Logo moves from center to its placeholder in the layout
+      tl.add(Flip.from(state, {
+        targets: bigLogoRef.current,
+        duration: 2,
+        ease: 'power2.inOut',
+        scale: true,
+        absolute: true,
+      }), 0); // Start at 0
 
-    return () => {
-      clearInterval(timer);
-      clearTimeout(btnTimer);
-      clearTimeout(cursorTimer1);
-      clearTimeout(cursorTimer2);
-    };
+      // 5. Fade out the black overlay
+      tl.to('.hero-black-overlay', {
+        opacity: 0,
+        duration: 2,
+        ease: 'power2.inOut'
+      }, 0); // Synchronize with the flip
+
+      // 6. Animate text content in
+      tl.from('.hero-content-reveal', {
+        y: 40,
+        opacity: 0,
+        duration: 1,
+        stagger: 0.2,
+        ease: 'power2.out'
+      }, '-=1'); // Start text reveal while logo is finishing its move
+
+    }, sectionRef);
+
+    return () => ctx.revert();
   }, []);
-
-  // Render typed text with <em> around "Hunt."
-  const renderTypedText = () => {
-    const huntStart = HEADLINE.indexOf('Hunt.');
-    const huntEnd = huntStart + 5;
-    const currentLen = displayText.length;
-
-    if (currentLen <= huntStart) {
-      return <>{displayText}</>;
-    } else if (currentLen <= huntEnd) {
-      return (
-        <>
-          {HEADLINE.slice(0, huntStart)}
-          <em>{displayText.slice(huntStart)}</em>
-        </>
-      );
-    } else {
-      return (
-        <>
-          {HEADLINE.slice(0, huntStart)}
-          <em>Hunt.</em>
-          {displayText.slice(huntEnd)}
-        </>
-      );
-    }
-  };
 
   return (
     <section
       id="home"
+      ref={sectionRef}
       className="relative min-h-screen flex items-center justify-center overflow-hidden hero-grid"
       style={{
         background: 'var(--bg-void)',
-        paddingTop: '80px',
       }}
     >
       {/* Subtle radial glow top-left */}
@@ -88,64 +90,87 @@ export default function Hero() {
         }}
       />
 
+      {/* Dark overlay for the initial black start */}
+      <div 
+        className="hero-black-overlay absolute inset-0 z-40 flex flex-col items-center justify-center pointer-events-none px-6" 
+        style={{ background: '#000' }}
+      >
+        <h2 
+          className="text-white font-bold tracking-[0.3em] text-3xl sm:text-5xl md:text-7xl lg:text-8xl relative z-[60] text-center w-full"
+          style={{ textTransform: 'uppercase', opacity: 0.8 }}
+        >
+          GAMKERS
+        </h2>
+      </div>
+
       <div className="max-w-4xl mx-auto px-6 text-center relative z-10 flex flex-col items-center">
-        {/* Logo and Brand */}
-        <div className="anim-fade-in mb-10 flex flex-col items-center gap-6" style={{ transitionDelay: '100ms' }} ref={(el) => { if (el) setTimeout(() => el.classList.add('visible'), 100); }}>
-          <img src="/logo.png" alt="Gamkers Logo" className="w-32 h-32 md:w-48 md:h-48 lg:w-56 lg:h-56" style={{ filter: 'drop-shadow(0 0 20px rgba(34, 197, 94, 0.15))' }} />
-          <h2 style={{ fontSize: '42px', fontWeight: 700, letterSpacing: '0.2em', color: 'var(--text-primary)', textTransform: 'uppercase' }}>GAMKERS</h2>
+        {/* Placeholder for Logo in the final layout */}
+        <div ref={logoPlaceholderRef} className="mb-10 w-32 h-32 md:w-48 md:h-48 lg:w-56 lg:h-56">
+          {/* This logo is the one that actually stays in the layout */}
+          <img 
+            ref={bigLogoRef}
+            src="/logo.png" 
+            alt="Gamkers Logo" 
+            className="w-full h-full object-contain logo-breathe"
+            style={{ 
+              // Initially centered/fullscreen-ish style that GSAP will Flip FROM
+              position: 'fixed',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%) scale(4)',
+              zIndex: 50
+            }} 
+          />
         </div>
 
-        {/* Eyebrow */}
-        <p className="eyebrow eyebrow-reveal mb-6">
-          INDIA'S LARGEST CYBERSECURITY COMMUNITY
-        </p>
+        <div className="flex flex-col items-center w-full">
+          <h2 className="hero-content-reveal mb-6 text-center w-full" style={{ fontSize: '42px', fontWeight: 700, letterSpacing: '0.2em', color: 'var(--text-primary)', textTransform: 'uppercase' }}>
+            GAMKERS
+          </h2>
 
-        {/* Display headline with typewriter */}
-        <h1 className="display-title mb-6">
-          {renderTypedText()}
-          {showCursor && (
-            <span className={`typewriter-cursor ${cursorFading ? 'fade-out' : ''}`}>|</span>
-          )}
-        </h1>
+          <p className="eyebrow hero-content-reveal mb-6 text-center w-full">
+            INDIA'S LARGEST CYBERSECURITY COMMUNITY
+          </p>
 
-        {/* Sub text */}
-        <p
-          className="anim-fade-in"
-          style={{
-            fontSize: '16px',
-            lineHeight: 1.7,
-            color: 'var(--text-secondary)',
-            maxWidth: '560px',
-            margin: '0 auto 40px',
-            transitionDelay: '400ms',
-          }}
-          ref={(el) => {
-            if (el) {
-              setTimeout(() => el.classList.add('visible'), 500);
-            }
-          }}
-        >
-          Gamkers is building Asia's biggest security community — where ethical hackers,
-          bug bounty hunters, and red teamers level up together.
-        </p>
+          <h1 className="display-title hero-content-reveal mb-6 text-center w-full">
+            Learn. <em>Hunt.</em> Dominate.
+          </h1>
 
-        {/* CTAs */}
-        <div
-          className="flex flex-col sm:flex-row items-center justify-center gap-4"
-          style={{
-            opacity: buttonsVisible ? 1 : 0,
-            transform: buttonsVisible ? 'translateY(0)' : 'translateY(24px)',
-            transition: 'opacity 400ms ease, transform 400ms ease',
-          }}
-        >
-          <a href="#courses">
-            <button className="btn-solid">Explore Courses</button>
-          </a>
-          <a href="#products">
-            <button className="btn-ghost">View Products</button>
-          </a>
+          <p
+            className="hero-content-reveal text-center w-full"
+            style={{
+              fontSize: '16px',
+              lineHeight: 1.7,
+              color: 'var(--text-secondary)',
+              maxWidth: '560px',
+              margin: '0 auto 40px',
+            }}
+          >
+            Gamkers is building Asia's biggest security community — where ethical hackers,
+            bug bounty hunters, and red teamers level up together.
+          </p>
+
+          <div
+            className="hero-content-reveal flex flex-col sm:flex-row items-center justify-center gap-4 w-full"
+          >
+            <a href="https://discord.gg/9MWjDM3cTy" target="_blank" rel="noopener noreferrer">
+              <button className="btn-solid">Join Community</button>
+            </a>
+            <a href="#products">
+              <button className="btn-ghost">View Product</button>
+            </a>
+          </div>
         </div>
       </div>
+      <style>{`
+        @keyframes breathingGlow {
+          0%, 100% { filter: drop-shadow(0 0 40px rgba(34, 197, 94, 0.25)); }
+          50% { filter: drop-shadow(0 0 80px rgba(34, 197, 94, 0.45)); }
+        }
+        .logo-breathe {
+          animation: breathingGlow 3s ease-in-out infinite;
+        }
+      `}</style>
     </section>
   );
 }

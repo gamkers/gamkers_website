@@ -3,11 +3,9 @@ import { useInView } from '@/hooks/use-animations';
 
 // Import GhostChip images
 import gcFront from './ghostchip-images/frontview.jpeg';
-import gcBack from './ghostchip-images/backview.jpeg';
 
 // Import Phantom32 images
 import p32Front from './phantom-images/front.jpeg';
-import p32Back from './phantom-images/back.jpeg';
 
 interface ProductCardProps {
   tag: string;
@@ -47,12 +45,10 @@ function ProductCard({ tag, title, subtitle, body, image, badge, onLearnMore, in
         <img
           src={image}
           alt={title}
+          className="product-gallery-img"
           style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            objectPosition: 'center',
             transition: 'transform 500ms ease',
+            objectPosition: 'center',
           }}
           onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.04)')}
           onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}

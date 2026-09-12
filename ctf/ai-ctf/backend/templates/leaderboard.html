@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Leaderboard — GAMKERS AI CTF{% endblock %}
+{% block head %}<meta http-equiv="refresh" content="8">{% endblock %}
+{% block content %}
+<div class="wrap">
+  <div class="card fade-up" style="text-align:center;padding:32px;background:linear-gradient(135deg,rgba(234,179,8,.06),rgba(249,115,22,.04));border-color:rgba(234,179,8,.15)">
+    <div style="font-size:40px">🏆</div>
+    <h2 style="font-size:22px;font-weight:800;margin-top:6px">Leaderboard</h2>
+    <p style="color:var(--text-muted);font-size:12px;margin-top:4px">Live · Auto-refreshes every 8s</p>
+  </div>
+
+  <div class="card" style="padding:0;overflow:hidden;border-radius:14px">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:50px">Rank</th>
+          <th>Player</th>
+          <th>Team</th>
+          <th style="text-align:right">Score</th>
+          <th style="text-align:center">Solves</th>
+          <th>Flags</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for p in players %}
+      <tr style="{% if player and p.id == player.id %}background:var(--green-glow){% endif %}">
+        <td style="font-weight:800;font-size:16px;color:{% if loop.index==1 %}var(--yellow){% elif loop.index==2 %}#c0c0c0{% elif loop.index==3 %}#cd7f32{% else %}var(--text-muted){% endif %}">
+          {% if loop.index <= 3 %}{{ ['🥇','🥈','🥉'][loop.index-1] }}{% else %}{{ loop.index }}{% endif %}
+        </td>
+        <td>
+          <span style="font-weight:700;color:var(--text)">{{ p.handle }}</span>
+          {% if player and p.id == player.id %}<span style="font-size:10px;color:var(--green);margin-left:4px">(you)</span>{% endif %}
+        </td>
+        <td style="color:var(--text-dim)">{{ p.team }}</td>
+        <td style="text-align:right;font-weight:800;font-size:16px;color:var(--green);font-family:'JetBrains Mono',monospace">{{ p.score }}</td>
+        <td style="text-align:center;color:var(--text-dim)">{{ p.solves_count }}/5</td>
+        <td>
+          {% for s in solves if s.player_id == p.id %}
+          <span class="badge {% if labs[s.lab_id].difficulty=='EASY' %}easy{% elif labs[s.lab_id].difficulty=='MEDIUM' %}medium{% elif labs[s.lab_id].difficulty=='HARD' %}hard{% else %}expert{% endif %}" style="font-size:8px;padding:2px 6px">
+            L{{ s.lab_id }}{% if s.first_blood %} 🩸{% endif %}
+          </span>
+          {% endfor %}
+        </td>
+      </tr>
+      {% endfor %}
+      {% if not players %}
+      <tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:40px;font-size:14px">No players yet — be the first to register!</td></tr>
+      {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

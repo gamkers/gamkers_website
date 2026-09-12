@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block content %}
+<div class="wrap wrap-lg">
+  <div class="card"><h2>📊 Admin Dashboard</h2><p class="sub">{{ players|length }} players registered · Supabase-backed</p></div>
+
+  <div class="card">
+    <h3 style="color:var(--text-dim)">Players</h3>
+    <table><thead><tr><th>ID</th><th>Handle</th><th>Team</th><th>Score</th><th>Registered</th></tr></thead>
+    <tbody>{% for p in players %}<tr>
+      <td>{{ p.id }}</td><td style="font-weight:700">{{ p.handle }}</td><td>{{ p.team }}</td>
+      <td style="color:var(--green);font-weight:700">{{ p.score }}</td>
+      <td style="font-size:11px;color:var(--text-muted)">{{ p.created_at[:19] if p.created_at else '' }}</td>
+    </tr>{% endfor %}</tbody></table>
+  </div>
+
+  <div class="card">
+    <h3 style="color:var(--text-dim)">Flag Submissions (latest 200)</h3>
+    <table><thead><tr><th>Time</th><th>Player</th><th>Lab</th><th>Attempt</th><th>✓</th></tr></thead>
+    <tbody>{% for s in subs %}<tr>
+      <td style="font-size:10px;color:var(--text-muted)">{{ s.ts[:19] if s.ts else '' }}</td>
+      <td>{{ s.ctf_players.handle if s.ctf_players else '?' }}</td>
+      <td>{{ s.lab_id }}</td>
+      <td style="font-size:11px;word-break:break-all;max-width:250px">{{ s.flag_attempt }}</td>
+      <td>{% if s.correct %}<span style="color:var(--green)">✅</span>{% else %}<span style="color:var(--red)">❌</span>{% endif %}</td>
+    </tr>{% endfor %}</tbody></table>
+  </div>
+
+  <div class="card">
+    <h3 style="color:var(--text-dim)">Chat Logs (latest 200)</h3>
+    <table><thead><tr><th>Player</th><th>Lab</th><th>Message</th><th>Response (truncated)</th></tr></thead>
+    <tbody>{% for l in logs %}<tr>
+      <td>{{ l.ctf_players.handle if l.ctf_players else '?' }}</td>
+      <td>{{ l.lab_id }}</td>
+      <td style="font-size:11px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ l.message[:80] if l.message else '' }}</td>
+      <td style="font-size:11px;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ l.response[:100] if l.response else '' }}</td>
+    </tr>{% endfor %}</tbody></table>
+  </div>
+</div>
+{% endblock %}

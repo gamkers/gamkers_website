@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  ctf-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: gamkers-ai-ctf
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - SECRET_KEY=gamkers-ctf-s3cr3t-k3y-ch4ng3-m3!
+      - ADMIN_PASSWORD=gamkers2024!
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - SUPABASE_URL=https://nufgpguitvkxctpagwwf.supabase.co
+      - SUPABASE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51ZmdwZ3VpdHZreGN0cGFnd3dmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY5NTA0MTIsImV4cCI6MjA1MjUyNjQxMn0.-MLSuSnfllGJrrQMEfHrQjxZoeujy6jZiHG9L9jY6Ik
+    restart: unless-stopped

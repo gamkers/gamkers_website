@@ -1,22 +1,18 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Flip } from 'gsap/Flip';
 
 gsap.registerPlugin(ScrollTrigger, Flip);
 
-const HEADLINE = 'Learn. Hunt. Dominate.';
+
 
 export default function Hero() {
-  const [buttonsVisible, setButtonsVisible] = useState(false);
   const sectionRef = useRef<HTMLDivElement>(null);
   const logoPlaceholderRef = useRef<HTMLDivElement>(null);
-  const bigLogoRef = useRef<HTMLDivElement>(null);
+  const bigLogoRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
-    // Initial state setup
-    setButtonsVisible(true);
-
     const ctx = gsap.context(() => {
       // 1. Initial State: Force the Big Logo to "fit" the placeholder position
       // We want it to START large and center, so we capture that first.
@@ -50,13 +46,15 @@ export default function Hero() {
         ease: 'power2.inOut',
         scale: true,
         absolute: true,
+        force3D: true
       }), 0); // Start at 0
 
       // 5. Fade out the black overlay
       tl.to('.hero-black-overlay', {
         opacity: 0,
         duration: 2,
-        ease: 'power2.inOut'
+        ease: 'power2.inOut',
+        force3D: true
       }, 0); // Synchronize with the flip
 
       // 6. Animate text content in
@@ -65,7 +63,8 @@ export default function Hero() {
         opacity: 0,
         duration: 1,
         stagger: 0.2,
-        ease: 'power2.out'
+        ease: 'power2.out',
+        force3D: true
       }, '-=1'); // Start text reveal while logo is finishing its move
 
     }, sectionRef);
@@ -111,7 +110,7 @@ export default function Hero() {
             ref={bigLogoRef}
             src="/logo.png" 
             alt="Gamkers Logo" 
-            className="w-full h-full object-contain logo-breathe"
+            className="w-full h-full object-contain logo-breathe will-change-transform"
             style={{ 
               // Initially centered/fullscreen-ish style that GSAP will Flip FROM
               position: 'fixed',
@@ -164,11 +163,17 @@ export default function Hero() {
       </div>
       <style>{`
         @keyframes breathingGlow {
-          0%, 100% { filter: drop-shadow(0 0 40px rgba(34, 197, 94, 0.25)); }
-          50% { filter: drop-shadow(0 0 80px rgba(34, 197, 94, 0.45)); }
+          0%, 100% { opacity: 0.85; }
+          50% { opacity: 1; }
         }
         .logo-breathe {
           animation: breathingGlow 3s ease-in-out infinite;
+        }
+        .will-change-transform {
+          will-change: transform;
+        }
+        .hero-content-reveal {
+          will-change: transform, opacity;
         }
       `}</style>
     </section>

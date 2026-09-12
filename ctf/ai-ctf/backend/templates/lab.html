@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+{% block title %}Lab {{ lab_id }}: {{ meta.bot_name }}{% endblock %}
+{% block head %}
+<style>
+/* Layout */
+.lab-grid{display:grid;grid-template-columns:1fr 340px;gap:16px;min-height:calc(100vh - 56px)}
+@media(max-width:860px){.lab-grid{grid-template-columns:1fr;grid-template-rows:auto 1fr}}
+
+/* Chat Panel */
+.chat-panel{display:flex;flex-direction:column;background:var(--bg-secondary);border-right:1px solid var(--border)}
+.chat-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.bot-avatar{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--green),var(--blue));display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.chat-header-info h3{font-size:14px;font-weight:700;color:var(--text)}
+.chat-header-info p{font-size:11px;color:var(--text-muted)}
+.online-dot{width:8px;height:8px;border-radius:50%;background:var(--green);margin-left:auto;flex-shrink:0;box-shadow:0 0 8px var(--green)}
+
+/* Messages */
+.chat-messages{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:16px}
+.msg-group{display:flex;gap:10px;max-width:92%}
+.msg-group.user{align-self:flex-end;flex-direction:row-reverse}
+.msg-avatar{width:30px;height:30px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;margin-top:2px}
+.msg-avatar.bot{background:linear-gradient(135deg,var(--green),var(--blue))}
+.msg-avatar.user{background:var(--purple)}
+.msg-bubble{padding:12px 16px;border-radius:16px;font-size:13px;line-height:1.7;word-break:break-word}
+.msg-group.bot .msg-bubble{background:var(--bg-card);border:1px solid var(--border);border-top-left-radius:4px;color:var(--text)}
+.msg-group.user .msg-bubble{background:var(--blue);color:#fff;border-top-right-radius:4px}
+.msg-bubble pre{background:var(--bg-primary);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin:8px 0;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.6;color:var(--green)}
+.msg-bubble code{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--green);background:rgba(34,197,94,.1);padding:1px 5px;border-radius:4px}
+.msg-bubble pre code{background:none;padding:0}
+.msg-bubble strong{color:var(--text);font-weight:600}
+.tool-pill{display:inline-flex;align-items:center;gap:4px;font-size:10px;color:var(--yellow);background:rgba(234,179,8,.1);border:1px solid rgba(234,179,8,.2);padding:3px 8px;border-radius:6px;margin-top:6px;font-family:'JetBrains Mono',monospace}
+.msg-system{align-self:center;max-width:80%;text-align:center;padding:8px 16px;background:rgba(34,197,94,.06);border:1px dashed rgba(34,197,94,.2);border-radius:10px;font-size:11px;color:var(--green)}
+.typing{display:flex;gap:4px;padding:12px 16px}
+.typing span{width:7px;height:7px;border-radius:50%;background:var(--text-muted);animation:pulse 1.4s ease-in-out infinite}
+.typing span:nth-child(2){animation-delay:.2s}
+.typing span:nth-child(3){animation-delay:.4s}
+
+/* Input Bar */
+.chat-input-bar{padding:16px 20px;border-top:1px solid var(--border);background:var(--bg-secondary)}
+.input-row{display:flex;gap:8px;align-items:center}
+.input-row input{flex:1;border-radius:12px;padding:12px 16px;font-size:14px;background:var(--bg-card);border:1px solid var(--border)}
+.input-row input:focus{border-color:var(--green);box-shadow:0 0 0 3px var(--green-glow)}
+.send-btn{width:42px;height:42px;border-radius:12px;background:var(--green);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;flex-shrink:0}
+.send-btn:hover{background:var(--green-dim)}
+.send-btn:disabled{opacity:.4;cursor:not-allowed}
+.send-btn svg{width:18px;height:18px;color:#000}
+
+/* Sidebar */
+.sidebar{padding:20px;overflow-y:auto;background:var(--bg-primary)}
+.sidebar .card{padding:18px}
+
+/* Objective */
+.objective{background:linear-gradient(135deg,rgba(234,179,8,.06),rgba(239,68,68,.04));border-color:rgba(234,179,8,.2)}
+.objective h3{color:var(--yellow)}
+
+/* Hints */
+.hint-toggle{width:100%;text-align:left;font-size:12px;color:var(--text-dim);cursor:pointer;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg-secondary);display:flex;align-items:center;gap:8px;margin:4px 0;transition:.15s;font-family:inherit}
+.hint-toggle:hover{border-color:var(--text-muted);color:var(--text)}
+.hint-toggle .arrow{transition:.2s;font-size:10px}
+.hint-content{display:none;font-size:12px;color:var(--green);padding:10px 12px;background:var(--green-glow);border-radius:8px;margin:4px 0;line-height:1.7}
+
+/* Flag */
+.flag-row{display:flex;gap:8px}
+.flag-row input{flex:1;font-family:'JetBrains Mono',monospace;font-size:12px}
+#flag-result .alert{margin-top:8px}
+
+/* Lab Nav */
+.lab-tabs{display:flex;gap:4px;padding:0 20px;background:var(--bg-primary);border-bottom:1px solid var(--border)}
+.lab-tab{padding:10px 16px;font-size:12px;font-weight:600;color:var(--text-muted);border-bottom:2px solid transparent;transition:.15s;text-decoration:none}
+.lab-tab:hover{color:var(--text)}
+.lab-tab.active{color:var(--green);border-bottom-color:var(--green)}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Lab Tabs -->
+<div class="lab-tabs">
+  {% for i in range(1,8) %}
+  <a href="/lab/{{i}}" class="lab-tab {% if i==lab_id %}active{% endif %}">Lab {{i}}</a>
+  {% endfor %}
+  <a href="/leaderboard" class="lab-tab" style="margin-left:auto">🏆 Board</a>
+</div>
+
+<div class="lab-grid">
+  <!-- Chat Panel -->
+  <div class="chat-panel">
+    <div class="chat-header">
+      <div class="bot-avatar">🤖</div>
+      <div class="chat-header-info">
+        <h3>{{ meta.bot_name }}</h3>
+        <p>{{ meta.owasp }} · {{ meta.points }}pts</p>
+      </div>
+      <div class="online-dot" title="Online"></div>
+      {% if solved %}<span class="badge easy" style="margin-left:8px">SOLVED</span>{% endif %}
+    </div>
+
+    <div class="chat-messages" id="chat">
+      <div class="msg-group bot">
+        <div class="msg-avatar bot">🤖</div>
+        <div class="msg-bubble">Hi! I'm <strong>{{ meta.bot_name }}</strong>. {{ meta.bot_desc }}<br><br>How can I help you today?</div>
+      </div>
+    </div>
+
+    <div class="chat-input-bar">
+      <div class="input-row">
+        <input type="text" id="msg-input" placeholder="Type a message..." autocomplete="off">
+        <button class="send-btn" onclick="sendMsg()" id="send-btn" title="Send">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="card objective">
+      <h3>🎯 Objective</h3>
+      <p style="font-size:12px;color:var(--text);margin-top:8px;line-height:1.7">{{ meta.objective }}</p>
+    </div>
+
+    <div class="card">
+      <h3 style="color:var(--text-dim)">🏁 Submit Flag</h3>
+      <p style="font-size:11px;color:var(--text-muted);margin-bottom:10px">Format: GAMKERS{...}</p>
+      <div class="flag-row">
+        <input type="text" id="flag-input" placeholder="GAMKERS{...}" autocomplete="off">
+        <button class="btn btn-green btn-sm" onclick="submitFlag()">Submit</button>
+      </div>
+      <div id="flag-result"></div>
+    </div>
+
+    <div class="card">
+      <h3 style="color:var(--text-dim)">💡 Hints</h3>
+      {% for h in meta.hints %}
+      <button class="hint-toggle" onclick="let c=this.nextElementSibling;let a=this.querySelector('.arrow');if(c.style.display==='block'){c.style.display='none';a.textContent='▶'}else{c.style.display='block';a.textContent='▼'}">
+        <span class="arrow">▶</span> Hint {{ loop.index }}
+      </button>
+      <div class="hint-content">{{ h }}</div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<script>
+const LAB = {{ lab_id }};
+const chatEl = document.getElementById('chat');
+const msgInput = document.getElementById('msg-input');
+const sendBtn = document.getElementById('send-btn');
+
+msgInput.addEventListener('keydown', e => { if(e.key==='Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); }});
+
+async function sendMsg() {
+  const msg = msgInput.value.trim();
+  if(!msg) return;
+  msgInput.value = '';
+  addMessage(msg, 'user');
+  sendBtn.disabled = true;
+
+  // Typing indicator
+  const typingEl = document.createElement('div');
+  typingEl.className = 'msg-group bot';
+  typingEl.id = 'typing';
+  typingEl.innerHTML = '<div class="msg-avatar bot">🤖</div><div class="msg-bubble"><div class="typing"><span></span><span></span><span></span></div></div>';
+  chatEl.appendChild(typingEl);
+  chatEl.scrollTop = chatEl.scrollHeight;
+
+  try {
+    const r = await fetch('/lab/'+LAB+'/chat', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({message: msg})
+    });
+    const d = await r.json();
+    typingEl.remove();
+
+    if(d.error) { addSystem('⚠️ '+d.error); }
+    else {
+      addMessage(d.response, 'bot', d.tools);
+      if(d.trigger_flag) {
+        addSystem('🔓 Hidden trigger detected in output! Flag revealed.');
+        document.getElementById('flag-result').innerHTML = '<div class="alert alert-flag">🏆 ' + '{{ "GAMKERS{1ns3cur3_0utput_x55_r3nd3r3d_fl4g}" if lab_id==3 else "" }}' + '</div>';
+      }
+    }
+  } catch(e) {
+    typingEl.remove();
+    addSystem('Network error. Try again.');
+  }
+  sendBtn.disabled = false;
+  msgInput.focus();
+}
+
+function addMessage(text, type, tools) {
+  const group = document.createElement('div');
+  group.className = 'msg-group ' + type;
+
+  const avatar = document.createElement('div');
+  avatar.className = 'msg-avatar ' + type;
+  avatar.textContent = type === 'bot' ? '🤖' : '👤';
+
+  const bubble = document.createElement('div');
+  bubble.className = 'msg-bubble';
+
+  if(type === 'bot') {
+    let html = text
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
+      .replace(/`([^`]+)`/g, '<code>$1</code>')
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\n/g, '<br>');
+    bubble.innerHTML = html;
+    if(tools && tools.length) {
+      const toolsDiv = document.createElement('div');
+      toolsDiv.style.marginTop = '8px';
+      tools.forEach(t => {
+        const pill = document.createElement('span');
+        pill.className = 'tool-pill';
+        pill.textContent = '⚙ ' + t;
+        toolsDiv.appendChild(pill);
+        toolsDiv.appendChild(document.createTextNode(' '));
+      });
+      bubble.appendChild(toolsDiv);
+    }
+  } else {
+    bubble.textContent = text;
+  }
+
+  group.appendChild(avatar);
+  group.appendChild(bubble);
+  chatEl.appendChild(group);
+  chatEl.scrollTop = chatEl.scrollHeight;
+}
+
+function addSystem(text) {
+  const el = document.createElement('div');
+  el.className = 'msg-system';
+  el.textContent = text;
+  chatEl.appendChild(el);
+  chatEl.scrollTop = chatEl.scrollHeight;
+}
+
+async function submitFlag() {
+  const flag = document.getElementById('flag-input').value.trim();
+  if(!flag) return;
+  try {
+    const r = await fetch('/lab/'+LAB+'/submit', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({flag})
+    });
+    const d = await r.json();
+    const el = document.getElementById('flag-result');
+    if(d.error) el.innerHTML = '<div class="alert alert-err">'+d.error+'</div>';
+    else if(d.correct) el.innerHTML = '<div class="alert alert-ok">'+d.msg+'</div>';
+    else el.innerHTML = '<div class="alert alert-err">'+d.msg+'</div>';
+  } catch(e) {
+    document.getElementById('flag-result').innerHTML = '<div class="alert alert-err">Network error</div>';
+  }
+}
+</script>
+{% endblock %}

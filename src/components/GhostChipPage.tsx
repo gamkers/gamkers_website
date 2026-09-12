@@ -130,7 +130,7 @@ const specs = [
   { label: 'Module', value: 'ESP32-S3-WROOM-1' },
   { label: 'Interface', value: 'USB-A (Male) — Plug & Play' },
   { label: 'Processor', value: 'Dual-core Xtensa LX7 @ 240MHz' },
-  { label: 'AI Engine', value: 'Llama 3.3 70B via Groq API' },
+  { label: 'AI Engine', value: 'Qwen 3.6 27B via OpenRouter API' },
   { label: 'Storage', value: 'MicroSD Card Reader (SPI)' },
   { label: 'LED', value: '1× Addressable RGB NeoPixel' },
   { label: 'Button', value: '1× GPIO User / Boot Button' },
@@ -168,10 +168,6 @@ export default function GhostChipPage({ onBack }: GhostChipPageProps) {
     return () => clearTimeout(t);
   }, []);
 
-  const dot = (color = 'var(--accent)') => (
-    <div style={{ width: 5, height: 5, borderRadius: '50%', background: color, flexShrink: 0, marginTop: 8 }} />
-  );
-
   return (
     <div style={{ 
       minHeight: '100vh', 
@@ -199,8 +195,8 @@ export default function GhostChipPage({ onBack }: GhostChipPageProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-24">
           {/* Gallery */}
           <div>
-            <div className="g-panel" style={{ overflow: 'hidden', height: 360, background: '#050505' }}>
-              <img key={activeImage} src={gallery[activeImage].src} alt={gallery[activeImage].label} style={{ width: '100%', height: '100%', objectFit: 'cover', animation: 'fadeImgIn 300ms ease' }} />
+            <div className="g-panel" style={{ overflow: 'hidden', height: 'auto', aspectRatio: '16/9', background: '#050505' }}>
+              <img key={activeImage} src={gallery[activeImage].src} alt={gallery[activeImage].label} className="product-gallery-img" style={{ animation: 'fadeImgIn 300ms ease' }} />
             </div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
               {gallery.map((img, i) => (
@@ -236,11 +232,13 @@ export default function GhostChipPage({ onBack }: GhostChipPageProps) {
                   <ShoppingBag size={18} /> Buy Now
                 </button>
               </a>
-              <a href="https://gamkers.github.io/GhostChipUI/" target="_blank" rel="noopener noreferrer" style={{ flex: 1, minWidth: 140 }}>
-                <button className="btn-ghost" style={{ width: '100%', justifyContent: 'center', padding: '14px 24px', fontSize: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
-                  Open Web App <ChevronRight size={16} />
-                </button>
-              </a>
+               <a href="https://gamkers.github.io/GhostChipUI/" target="_blank" rel="noopener noreferrer" style={{ flex: 1, minWidth: 140 }}>
+                 <button className="btn-ghost" style={{ width: '100%', justifyContent: 'center', padding: '14px 24px', fontSize: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
+                   <span className="hide-mobile">Open Web App</span>
+                   <span className="show-mobile">Open PWA</span>
+                   <ChevronRight size={16} />
+                 </button>
+               </a>
             </div>
             <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', paddingTop: 14, borderTop: '0.5px solid var(--bg-border)' }}>
               {['AI-Powered', 'Plug & Play', 'Android + Web App', 'Wi-Fi + BLE'].map(f => (

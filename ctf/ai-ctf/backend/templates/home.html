@@ -1,0 +1,348 @@
+{% extends "base.html" %}
+{% block title %}GAMKERS AI CTF — Exploit the Machine{% endblock %}
+{% block content %}
+<style>
+  /* ─── HOME SPECIFIC STYLES ─── */
+  .hero-grid{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:.04;
+    background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);
+    background-size:60px 60px}
+  .home-wrap{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:0 20px}
+
+  /* Stats Bar */
+  .stats-bar{display:flex;align-items:center;gap:20px;flex-wrap:wrap;margin-bottom:28px}
+  .stat-box{text-align:center;padding:12px 20px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:12px;min-width:80px}
+  .stat-val{font-size:22px;font-weight:900;font-family:'JetBrains Mono',monospace}
+  .stat-lbl{font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1.5px;margin-top:2px}
+
+  /* Progress */
+  .progress-wrap{margin-bottom:32px}
+  .progress-track{height:5px;border-radius:3px;background:var(--bg-secondary);overflow:hidden}
+  .progress-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#22c55e,#3b82f6,#a855f7);transition:width .8s cubic-bezier(.4,0,.2,1)}
+
+  /* Lab Cards Grid */
+  .labs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:18px;margin-bottom:40px}
+
+  /* Individual Card */
+  .lab-card{position:relative;background:var(--bg-secondary);border:1px solid var(--border);border-radius:16px;overflow:hidden;cursor:pointer;transition:all .3s cubic-bezier(.4,0,.2,1)}
+  .lab-card:hover{transform:translateY(-4px);border-color:rgba(59,130,246,.4);box-shadow:0 12px 40px rgba(0,0,0,.4),0 0 20px rgba(59,130,246,.08)}
+  .lab-card.solved{border-color:rgba(34,197,94,.3)}
+  .lab-card.solved:hover{border-color:rgba(34,197,94,.5);box-shadow:0 12px 40px rgba(0,0,0,.4),0 0 20px rgba(34,197,94,.08)}
+  .card-ribbon{height:3px;background:var(--blue)}
+  .card-ribbon.easy{background:linear-gradient(90deg,#22c55e,#4ade80)}
+  .card-ribbon.medium{background:linear-gradient(90deg,#eab308,#facc15)}
+  .card-ribbon.hard{background:linear-gradient(90deg,#f97316,#fb923c)}
+  .card-ribbon.expert{background:linear-gradient(90deg,#ef4444,#f87171)}
+  .card-body{padding:20px}
+  .card-head{display:flex;align-items:flex-start;gap:14px}
+  .card-avatar{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;border:1px solid var(--border);background:var(--bg)}
+  .lab-card.solved .card-avatar{background:rgba(34,197,94,.08);border-color:rgba(34,197,94,.3)}
+  .card-title{font-size:16px;font-weight:800;color:var(--text)}
+  .card-sub{font-size:11px;color:var(--text-dim);margin-top:2px}
+  .card-pts{text-align:right;flex-shrink:0}
+  .card-pts-val{font-size:22px;font-weight:900;color:var(--yellow);font-family:'JetBrains Mono',monospace;line-height:1}
+  .card-pts-lbl{font-size:8px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-top:3px}
+  .card-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:14px}
+  .tag{font-size:10px;padding:3px 10px;border-radius:6px;font-weight:600;border:1px solid var(--border);color:var(--text-muted);background:var(--bg)}
+  .tag.owasp{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.3px}
+  .card-desc{font-size:12px;color:var(--text-muted);margin-top:12px;line-height:1.6}
+  .card-footer{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-top:1px solid var(--border);background:rgba(0,0,0,.1)}
+  .card-footer-status{font-size:11px;font-weight:700}
+
+  /* ─── FULL SCREEN MODAL ─── */
+  .modal-overlay{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);display:none;align-items:center;justify-content:center;padding:20px;opacity:0;transition:opacity .3s ease}
+  .modal-overlay.active{display:flex;opacity:1}
+  .modal-panel{width:100%;max-width:700px;max-height:90vh;overflow-y:auto;background:var(--bg);border:1px solid var(--border);border-radius:20px;position:relative;animation:modalIn .4s cubic-bezier(.16,1,.3,1)}
+  @keyframes modalIn{from{transform:scale(.92) translateY(20px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+  .modal-ribbon{height:4px;border-radius:20px 20px 0 0}
+  .modal-close{position:absolute;top:16px;right:16px;width:36px;height:36px;border-radius:10px;border:1px solid var(--border);background:var(--bg-secondary);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;color:var(--text-muted);transition:all .2s;z-index:2}
+  .modal-close:hover{background:var(--red);color:#fff;border-color:var(--red)}
+  .modal-header{padding:28px 28px 0;display:flex;align-items:flex-start;gap:16px}
+  .modal-avatar{width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:28px;background:var(--bg-secondary);border:1px solid var(--border);flex-shrink:0}
+  .modal-title{font-size:22px;font-weight:900;color:var(--text)}
+  .modal-owasp{font-size:12px;color:var(--blue);margin-top:4px;font-family:'JetBrains Mono',monospace}
+  .modal-body{padding:24px 28px 28px}
+  .modal-section{margin-bottom:20px}
+  .modal-section-title{font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+  .modal-objective{font-size:14px;color:var(--text);line-height:1.7;padding:16px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:12px}
+  .modal-hint{margin-bottom:6px;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+  .modal-hint summary{font-size:13px;color:var(--text-muted);cursor:pointer;padding:10px 14px;user-select:none;transition:all .2s}
+  .modal-hint summary:hover{color:var(--blue);background:rgba(59,130,246,.04)}
+  .modal-hint p{font-size:12px;color:var(--text-dim);padding:0 14px 12px;line-height:1.6}
+  .modal-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+  .modal-stat{text-align:center;padding:14px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:12px}
+  .modal-stat-val{font-size:20px;font-weight:900;font-family:'JetBrains Mono',monospace}
+  .modal-stat-lbl{font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-top:3px}
+  .modal-actions{display:flex;gap:12px;align-items:center;padding-top:8px}
+  .btn-start{display:inline-flex;align-items:center;gap:8px;padding:14px 32px;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;font-size:14px;font-weight:800;border-radius:12px;text-decoration:none;transition:all .3s;border:none;cursor:pointer}
+  .btn-start:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(34,197,94,.3)}
+  .btn-start.solved{background:linear-gradient(135deg,#3b82f6,#2563eb)}
+  .btn-start.solved:hover{box-shadow:0 8px 24px rgba(59,130,246,.3)}
+
+  /* Responsive */
+  @media(max-width:640px){
+    .labs-grid{grid-template-columns:1fr}
+    .stats-bar{gap:10px}
+    .stat-box{flex:1;min-width:60px;padding:10px 12px}
+    .stat-val{font-size:18px}
+    .modal-panel{border-radius:16px}
+    .modal-stats{grid-template-columns:repeat(3,1fr)}
+    .modal-header{padding:20px 20px 0}
+    .modal-body{padding:20px}
+  }
+</style>
+
+<div class="hero-grid"></div>
+
+<div class="home-wrap">
+  {% if player %}
+  <!-- Player Stats -->
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:8px">
+    <div>
+      <span style="font-size:12px;color:var(--text-dim)">Operator</span>
+      <span style="font-size:16px;font-weight:900;color:var(--text);margin-left:6px">{{ player.handle }}</span>
+      <span style="font-size:11px;color:var(--text-dim);margin-left:4px;opacity:.6">{{ player.team }}</span>
+    </div>
+    <div style="display:flex;gap:8px">
+      <a href="/leaderboard" class="btn" style="font-size:11px;padding:8px 16px">🏆 Leaderboard</a>
+      <a href="/reset-session" class="btn" style="font-size:11px;padding:8px 16px;opacity:.6">Logout</a>
+    </div>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat-box"><div class="stat-val" style="color:var(--green)">{{ player.score or 0 }}</div><div class="stat-lbl">Points</div></div>
+    <div class="stat-box"><div class="stat-val" style="color:var(--blue)">{{ solved|length }}/{{ labs|length }}</div><div class="stat-lbl">Solved</div></div>
+    <div class="stat-box">
+      {% set pct = ((solved|length) / (labs|length) * 100)|int if labs|length > 0 else 0 %}
+      <div class="stat-val" style="color:var(--purple,#a855f7)">{{ pct }}%</div><div class="stat-lbl">Progress</div>
+    </div>
+    <div class="stat-box"><div class="stat-val" style="color:var(--yellow)">{% if pct == 100 %}🏆{% elif pct >= 50 %}⚡{% else %}🔰{% endif %}</div><div class="stat-lbl">Rank</div></div>
+  </div>
+
+  <!-- Progress Bar -->
+  <div class="progress-wrap">
+    <div class="progress-track"><div class="progress-fill" style="width:{{ pct }}%"></div></div>
+  </div>
+
+  {% else %}
+  <!-- Guest Hero -->
+  <div style="text-align:center;padding:48px 20px 40px">
+    <div style="font-size:48px;margin-bottom:12px;filter:drop-shadow(0 0 20px rgba(59,130,246,.3))">🤖</div>
+    <h1 style="font-size:28px;font-weight:900;background:linear-gradient(135deg,#fff,#94a3b8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.3">AI Chatbot Exploitation<br>Capture The Flag</h1>
+    <p style="color:var(--text-muted);font-size:14px;margin:12px auto 0;max-width:500px;line-height:1.6">7 labs based on the OWASP LLM Top 10. Real AI chatbots. Real vulnerabilities. Exploit prompt injection, data poisoning, RAG attacks, and more.</p>
+    <div style="display:flex;gap:12px;justify-content:center;margin-top:24px">
+      <a href="/register" class="btn btn-green" style="padding:12px 32px;font-size:14px;font-weight:700">Join CTF →</a>
+      <a href="/login" class="btn" style="padding:12px 32px;font-size:14px">Login</a>
+    </div>
+    <div style="display:flex;gap:24px;justify-content:center;margin-top:20px">
+      <div style="text-align:center"><div style="font-size:20px;font-weight:900;color:var(--green);font-family:'JetBrains Mono',monospace">2100</div><div style="font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px">Max Points</div></div>
+      <div style="text-align:center"><div style="font-size:20px;font-weight:900;color:var(--blue);font-family:'JetBrains Mono',monospace">7</div><div style="font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px">Labs</div></div>
+      <div style="text-align:center"><div style="font-size:20px;font-weight:900;color:var(--yellow);font-family:'JetBrains Mono',monospace">5</div><div style="font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px">OWASP Vulns</div></div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Section Divider -->
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+    <div style="font-size:14px;font-weight:800;color:var(--text);text-transform:uppercase;letter-spacing:1px">Labs</div>
+    <div style="flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent)"></div>
+  </div>
+
+  <!-- Lab Cards Grid -->
+  <div class="labs-grid">
+    {% for lid, m in labs.items() %}
+    <div class="lab-card {% if lid in solved %}solved{% endif %} fade-up" style="animation-delay:{{ loop.index * 50 }}ms" onclick="openModal({{ lid }})">
+      <div class="card-ribbon {{ m.difficulty|lower }}"></div>
+      <div class="card-body">
+        <div class="card-head">
+          <div class="card-avatar">{% if lid in solved %}✅{% else %}🤖{% endif %}</div>
+          <div style="flex:1;min-width:0">
+            <div class="card-title">{{ m.bot_name }}</div>
+            <div class="card-sub">Lab {{ lid }} · {{ m.title.split('—')[1]|trim if '—' in m.title else m.title }}</div>
+          </div>
+          <div class="card-pts">
+            <div class="card-pts-val">{{ m.points }}</div>
+            <div class="card-pts-lbl">pts</div>
+          </div>
+        </div>
+        <div class="card-tags">
+          <span class="badge {{ m.difficulty|lower }}">{{ m.difficulty }}</span>
+          <span class="tag owasp">{{ m.owasp.split(':')[0] }}</span>
+        </div>
+        <div class="card-desc">{{ m.bot_desc }}</div>
+      </div>
+      <div class="card-footer">
+        <div class="card-footer-status" style="color:{% if lid in solved %}var(--green){% else %}var(--text-dim){% endif %}">
+          {% if lid in solved %}✅ PWNED{% else %}⬜ Not started{% endif %}
+        </div>
+        <div style="font-size:11px;color:var(--blue);font-weight:600">View Details →</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- ─── FULL SCREEN MODAL ─── -->
+<div class="modal-overlay" id="labModal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-panel" id="modalPanel">
+    <div class="modal-ribbon" id="modalRibbon"></div>
+    <div class="modal-close" onclick="closeModal()">✕</div>
+
+    <div class="modal-header">
+      <div class="modal-avatar" id="modalAvatar">🤖</div>
+      <div>
+        <div class="modal-title" id="modalTitle"></div>
+        <div class="modal-owasp" id="modalOwasp"></div>
+      </div>
+    </div>
+
+    <div class="modal-body">
+      <!-- Stats -->
+      <div class="modal-stats">
+        <div class="modal-stat"><div class="modal-stat-val" id="modalPts" style="color:var(--yellow)"></div><div class="modal-stat-lbl">Points</div></div>
+        <div class="modal-stat"><div class="modal-stat-val" id="modalDiff"></div><div class="modal-stat-lbl">Difficulty</div></div>
+        <div class="modal-stat"><div class="modal-stat-val" id="modalStatus"></div><div class="modal-stat-lbl">Status</div></div>
+      </div>
+
+      <!-- Objective -->
+      <div class="modal-section">
+        <div class="modal-section-title">🎯 Mission Objective</div>
+        <div class="modal-objective" id="modalObjective"></div>
+      </div>
+
+      <!-- Vulnerability Intelligence -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:16px;margin-bottom:20px">
+        <div class="modal-section">
+          <div class="modal-section-title" style="color:#f97316">🔍 Vulnerability Analysis</div>
+          <div class="modal-objective" id="modalVulnTheory" style="font-size:12px; border-color:rgba(249,115,22,0.3); background:rgba(249,115,22,0.05); min-height:60px"></div>
+        </div>
+        <div class="modal-section">
+          <div class="modal-section-title" style="color:#ef4444">⚠️ Business Impact</div>
+          <div class="modal-objective" id="modalImpact" style="font-size:12px; border-color:rgba(239,68,68,0.3); background:rgba(239,68,68,0.05); min-height:60px"></div>
+        </div>
+      </div>
+
+      <!-- Hints -->
+      <div class="modal-section">
+        <div class="modal-section-title">💡 Intelligence Hints</div>
+        <div id="modalHints"></div>
+      </div>
+
+      <!-- Actions -->
+      <div class="modal-actions" style="margin-top:10px">
+        <a href="#" class="btn-start" id="modalStartBtn" onclick="event.stopPropagation()">
+          <span id="modalBtnIcon">⚡</span>
+          <span id="modalBtnText">Start Lab</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const eduData = {
+  1: {
+    theory: "Prompt Injection (Direct) occurs when an attacker provides input that overrides the model's system prompt instructions. It exploits the lack of clear separation between instructions and data.",
+    impact: "Full bypass of safety guardrails, leakage of confidential system configuration, and potential for unauthorized administrative actions."
+  },
+  2: {
+    theory: "Sensitive Information Disclosure occurs when an LLM reveals non-public data (PII, secrets) because it has access to too much context without row-level authorization.",
+    impact: "Legal/HIPAA violations, identity theft of other users, and catastrophic loss of proprietary intellectual property."
+  },
+  3: {
+    theory: "Insecure Output Handling happens when the AI's output is rendered by the browser without sanitization, allowing the model to generate and execute malicious JavaScript.",
+    impact: "Account takeover via XSS, session hijacking, and the ability to modify the application UI to trick other users."
+  },
+  4: {
+    theory: "Excessive Agency involves granting an LLM too many permissions or tools (read/write/execute) without human verification or strong authentication.",
+    impact: "Ransomware-style data deletion, unauthorized file exfiltration, and lateral movement within the server's file system."
+  },
+  5: {
+    theory: "Indirect Prompt Injection is an advanced attack where the model processes a 3rd party source (like a URL) that contains hidden 'directives' which hijack the session.",
+    impact: "Attackers can control the bot remotely just by getting a user to summarize a malicious link, leading to silent data theft."
+  },
+  6: {
+    theory: "Model/Data Poisoning involves polluting the knowledge base or training set to introduce persistent backdoors that trigger on specific keywords.",
+    impact: "Complete breakdown of model trust, persistent bias, and the creation of hidden 'master keys' that only the attacker knows."
+  },
+  7: {
+    theory: "Vector Weaknesses occur in RAG systems where semantic search retrieves documents regardless of their security classification, relying only on the LLM to filter them.",
+    impact: "Cross-context leakage where restricted security documents are surfaced alongside public data, allowing for easy extraction via injection."
+  }
+};
+
+const labData = {
+  {% for lid, m in labs.items() %}
+  {{ lid }}: {
+    title: {{ m.title|tojson }},
+    botName: {{ m.bot_name|tojson }},
+    owasp: {{ m.owasp|tojson }},
+    difficulty: {{ m.difficulty|tojson }},
+    points: {{ m.points }},
+    objective: {{ m.objective|tojson }},
+    botDesc: {{ m.bot_desc|tojson }},
+    hints: {{ m.hints|tojson }},
+    solved: {{ 'true' if lid in solved else 'false' }},
+    vulnTheory: eduData[{{ lid }}] ? eduData[{{ lid }}].theory : "TBD",
+    impact: eduData[{{ lid }}] ? eduData[{{ lid }}].impact : "TBD"
+  }{{ ',' if not loop.last }}
+  {% endfor %}
+};
+const isLoggedIn = {{ 'true' if player else 'false' }};
+
+function openModal(lid) {
+  const d = labData[lid];
+  if (!d) return;
+  const m = document.getElementById('labModal');
+  const diffColors = {EASY:'#22c55e',MEDIUM:'#eab308',HARD:'#f97316',EXPERT:'#ef4444'};
+  const c = diffColors[d.difficulty] || '#3b82f6';
+
+  document.getElementById('modalRibbon').style.background = `linear-gradient(90deg, ${c}, ${c}88)`;
+  document.getElementById('modalAvatar').textContent = d.solved ? '✅' : '🤖';
+  document.getElementById('modalAvatar').style.borderColor = d.solved ? 'rgba(34,197,94,.3)' : 'var(--border)';
+  document.getElementById('modalTitle').textContent = d.botName;
+  document.getElementById('modalOwasp').textContent = d.owasp;
+  document.getElementById('modalPts').textContent = d.points;
+  document.getElementById('modalDiff').textContent = d.difficulty;
+  document.getElementById('modalDiff').style.color = c;
+  document.getElementById('modalStatus').textContent = d.solved ? '✅ PWNED' : '⬜ ACTIVE';
+  document.getElementById('modalStatus').style.color = d.solved ? '#22c55e' : '#94a3b8';
+  document.getElementById('modalObjective').textContent = d.objective;
+  document.getElementById('modalVulnTheory').textContent = d.vulnTheory;
+  document.getElementById('modalImpact').textContent = d.impact;
+
+  // Hints
+  const hc = document.getElementById('modalHints');
+  hc.innerHTML = '';
+  d.hints.forEach((h, i) => {
+    const det = document.createElement('details');
+    det.className = 'modal-hint';
+    det.innerHTML = `<summary>Hint ${i+1} — ${i===0?'Easy':i===1?'Medium':i===2?'Hard':'Final'}</summary><p>${h}</p>`;
+    hc.appendChild(det);
+  });
+
+  // Button
+  const btn = document.getElementById('modalStartBtn');
+  if (isLoggedIn) {
+    btn.href = '/lab/' + lid;
+    document.getElementById('modalBtnIcon').textContent = d.solved ? '🔍' : '⚡';
+    document.getElementById('modalBtnText').textContent = d.solved ? 'Review Lab' : 'Start Hacking';
+    btn.className = 'btn-start' + (d.solved ? ' solved' : '');
+  } else {
+    btn.href = '/register';
+    document.getElementById('modalBtnIcon').textContent = '🔐';
+    document.getElementById('modalBtnText').textContent = 'Register to Start';
+    btn.className = 'btn-start';
+  }
+
+  m.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('labModal').classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+</script>
+{% endblock %}

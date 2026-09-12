@@ -80,9 +80,9 @@ export default function Leadership() {
         minWidth: 200.00,
         scale: 1.00,
         scaleMobile: 1.00,
-        color: 0x00ff1a,
-        backgroundColor: 0x0d2519,
-        points: 11.00,
+        color: 0x199627,
+        backgroundColor: 0x181120,
+        points: 8.00,
         maxDistance: 26.00
       }));
     }
@@ -96,7 +96,7 @@ export default function Leadership() {
       id="team" 
       ref={vantaRef}
       className="py-24 md:py-32 relative overflow-hidden" 
-      style={{ background: '#0d2519' }}
+      style={{ background: '#181120' }}
     >
       <div ref={sectionRef} className="max-w-6xl mx-auto px-6">
         {/* Eyebrow */}

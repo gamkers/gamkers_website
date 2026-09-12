@@ -211,7 +211,8 @@ export default function Phantom32Page({ onBack }: Phantom32PageProps) {
               style={{
                 overflow: 'hidden',
                 marginBottom: '16px',
-                height: '380px',
+                height: 'auto',
+                aspectRatio: '16/9',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -222,11 +223,8 @@ export default function Phantom32Page({ onBack }: Phantom32PageProps) {
                 key={activeImage}
                 src={gallery[activeImage].src}
                 alt={gallery[activeImage].label}
+                className="product-gallery-img"
                 style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                  objectPosition: 'center',
                   animation: 'fadeImgIn 300ms ease',
                 }}
               />

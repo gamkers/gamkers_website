@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}{% if mode == 'login' %}Login{% else %}Register{% endif %} — GAMKERS AI CTF{% endblock %}
+{% block content %}
+<div class="wrap wrap-sm">
+  <div class="card fade-up" style="text-align:center;padding:40px 28px">
+    <div style="font-size:40px;margin-bottom:10px">⚡</div>
+
+    <!-- Tabs -->
+    <div style="display:flex;gap:0;margin-bottom:20px;border-radius:10px;overflow:hidden;border:1px solid var(--border)">
+      <a href="/register" style="flex:1;padding:10px;text-decoration:none;font-weight:700;font-size:13px;transition:all .2s;{% if mode != 'login' %}background:var(--blue);color:#fff{% else %}background:var(--bg-secondary);color:var(--text-muted){% endif %}">New Player</a>
+      <a href="/login" style="flex:1;padding:10px;text-decoration:none;font-weight:700;font-size:13px;transition:all .2s;{% if mode == 'login' %}background:var(--blue);color:#fff{% else %}background:var(--bg-secondary);color:var(--text-muted){% endif %}">Returning Player</a>
+    </div>
+
+    {% if mode == 'login' %}
+    <!-- LOGIN FORM -->
+    <h2 style="font-size:22px;font-weight:800">Welcome Back</h2>
+    <p style="color:var(--text-muted);font-size:13px;margin-top:6px">Enter your handle and password to continue</p>
+    <form method="POST" action="/login" style="text-align:left;margin-top:20px">
+      <label>Your Handle</label>
+      <input type="text" name="handle" placeholder="e.g. h4ck3r" required maxlength="20" autofocus>
+      <label>Password</label>
+      <input type="password" name="password" placeholder="Your password" required minlength="4">
+      <button type="submit" class="btn btn-green" style="width:100%;margin-top:20px;padding:12px">Login & Continue →</button>
+    </form>
+
+    {% else %}
+    <!-- REGISTER FORM -->
+    <h2 style="font-size:22px;font-weight:800">Join the CTF</h2>
+    <p style="color:var(--text-muted);font-size:13px;margin-top:6px">Register to start exploiting AI chatbots</p>
+    <form method="POST" action="/register" style="text-align:left;margin-top:20px">
+      <label>Team Name</label>
+      <input type="text" name="team" placeholder="e.g. Red Team Alpha" required maxlength="30">
+      <label>Handle (unique username)</label>
+      <input type="text" name="handle" placeholder="e.g. h4ck3r" required maxlength="20">
+      <label>Password</label>
+      <input type="password" name="password" placeholder="Min 4 characters" required minlength="4">
+      <button type="submit" class="btn btn-green" style="width:100%;margin-top:20px;padding:12px">Register &amp; Start →</button>
+    </form>
+    {% endif %}
+
+    {% if error %}<div class="alert alert-err">{{ error }}</div>{% endif %}
+  </div>
+</div>
+{% endblock %}

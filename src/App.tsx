@@ -7,7 +7,6 @@ import Workshops from '@/components/Workshops';
 import Leadership from '@/components/Leadership';
 import Footer from '@/components/Footer';
 import ScrollProgress from '@/components/ScrollProgress';
-import CustomCursor from '@/components/CustomCursor';
 import SectionDivider from '@/components/SectionDivider';
 import Products from '@/components/Products';
 import GhostChipPage from '@/components/GhostChipPage';
@@ -67,7 +66,6 @@ export default function App() {
     return (
       <div className="min-h-screen" style={{ background: 'var(--bg-void)', color: 'var(--text-secondary)' }}>
         <ScrollProgress />
-        <CustomCursor />
         <Navbar onLogoClick={handleLogoClick} onNavClick={handleNavClick} />
         <GhostChipPage onBack={goHome} />
         <Footer />
@@ -79,7 +77,6 @@ export default function App() {
     return (
       <div className="min-h-screen" style={{ background: 'var(--bg-void)', color: 'var(--text-secondary)' }}>
         <ScrollProgress />
-        <CustomCursor />
         <Navbar onLogoClick={handleLogoClick} onNavClick={handleNavClick} />
         <Phantom32Page onBack={goHome} />
         <Footer />
@@ -90,7 +87,6 @@ export default function App() {
   return (
     <div className="min-h-screen" style={{ background: 'var(--bg-void)', color: 'var(--text-secondary)' }}>
       <ScrollProgress />
-      <CustomCursor />
       <Navbar onLogoClick={handleLogoClick} onNavClick={handleNavClick} />
       <main>
         <Hero />
